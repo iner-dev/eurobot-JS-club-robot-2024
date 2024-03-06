@@ -4,17 +4,17 @@
 
 //definition des  stepper et leurs pins
 
-#define R1_STEP_PIN         54    // ex x
-#define R1_DIR_PIN          55 
-#define R1_ENABLE_PIN       38  
+#define R1_STEP_PIN         2    // ex x
+#define R1_DIR_PIN          5 
+#define R1_ENABLE_PIN       8  
 
-#define R2_STEP_PIN         60    // ex y
-#define R2_DIR_PIN          61 
-#define R2_ENABLE_PIN       56
+#define R2_STEP_PIN         3    // ex y
+#define R2_DIR_PIN          6 
+#define R2_ENABLE_PIN       8
 
 #define R3_STEP_PIN         4     // ex Z
-#define R3_DIR_PIN          48
-#define R3_ENABLE_PIN       62 
+#define R3_DIR_PIN          7
+#define R3_ENABLE_PIN       8 
 
 AccelStepper stepperR1(AccelStepper::DRIVER, R1_STEP_PIN, R1_DIR_PIN);
 AccelStepper stepperR2(AccelStepper::DRIVER, R2_STEP_PIN, R2_DIR_PIN);
@@ -34,6 +34,7 @@ float r2;    //         valeur de vitesse du moteur de la roue 2
 float r3;    //         valeur de vitesse du moteur de la roue 3
 float angle; //         angle de mouvement sur un plan polaire
 float dist;  //         distance de mouvement sur un plan polaire
+bool armed;  //         armement des stepper
 
 
 //definitions des fonctions
@@ -60,8 +61,8 @@ float XY_Move_To_Angle(float x,float y){
 //transforme une valeur vectorielle X Y en un distance d'un mouvement sur un plan polaire 
 float XY_Move_To_Dist(float x,float y){
   float dist = sqrt(sq(x)+sq(y));
-  if(dist>3000){
-    dist = 3000;
+  if(dist>200){
+    dist = 200;
   }
   return dist;
 }
@@ -89,7 +90,7 @@ void setup() {
   // ouverture du port serie pour la comunication et le debug
   Serial.begin(9600);
 
-  //gestion des P***** des stepper
+  //gestion des stepper
   pinMode (R1_ENABLE_PIN,OUTPUT);
   pinMode (R1_DIR_PIN,OUTPUT);
   pinMode (R1_STEP_PIN,OUTPUT);
@@ -102,17 +103,17 @@ void setup() {
   
   stepperR1.setEnablePin(R1_ENABLE_PIN);
   stepperR1.setPinsInverted(false, false, true); 
-  stepperR1.setAcceleration(500.0);
-  stepperR1.setMaxSpeed(3000.0);
+  stepperR1.setAcceleration(75.0);
+  stepperR1.setMaxSpeed(300);
 
     
-  stepperR2.setMaxSpeed(3000.0);
-  stepperR2.setAcceleration(500.0);
+  stepperR2.setMaxSpeed(300);
+  stepperR2.setAcceleration(75.0);
   stepperR2.setEnablePin(R2_ENABLE_PIN);
   stepperR2.setPinsInverted(false, false, true);      
 
-  stepperR3.setMaxSpeed(3000.0);
-  stepperR3.setAcceleration(500.0);
+  stepperR3.setMaxSpeed(300.0);
+  stepperR3.setAcceleration(75.0);
   stepperR3.setEnablePin(R3_ENABLE_PIN);
   stepperR3.setPinsInverted(false, false, true);      
   
@@ -122,6 +123,7 @@ void setup() {
   digitalWrite (R1_ENABLE_PIN,LOW);
   digitalWrite (R2_ENABLE_PIN,LOW);
   digitalWrite (R3_ENABLE_PIN,LOW);
+  armed = true;
 }
 
 //boucle principale
@@ -138,13 +140,33 @@ void loop() {
     if(serial_income=='z'){
        z = Serial.parseInt();
     }
+    if(serial_income=='0'){
+      x = 0;
+      y = 0;
+      z = 0;
+    }
+    if(serial_income =='d'){ // desarmer stepper 
+      digitalWrite (R1_ENABLE_PIN,HIGH);
+      digitalWrite (R2_ENABLE_PIN,HIGH);
+      digitalWrite (R3_ENABLE_PIN,HIGH);
+      armed = false;
+      x = 0;
+      y = 0;
+      z = 0;
+    }
+    if(serial_income =='a'){ // armer les stepper
+      digitalWrite (R1_ENABLE_PIN,LOW);
+      digitalWrite (R2_ENABLE_PIN,LOW);
+      digitalWrite (R3_ENABLE_PIN,LOW);
+      armed = true;
+    }
     
     //transformation des données 
     angle = XY_Move_To_Angle(x,y);
     dist = XY_Move_To_Dist(x,y);
-    r1 = Wheel_Speed(angle,dist,z,(deg_to_rad*20));
-    r2 = Wheel_Speed(angle,dist,z,(deg_to_rad*150));
-    r3 = Wheel_Speed(angle,dist,z,(deg_to_rad*270));
+    r1 = map(Wheel_Speed(angle,dist,z,(deg_to_rad*30)),-1,1,-1,1);
+    r2 = map(Wheel_Speed(angle,dist,z,(deg_to_rad*150)),-1,1,-1,1);
+    r3 = map(Wheel_Speed(angle,dist,z,(deg_to_rad*270)),-1,1,-1,1);
     
     //execution des données
     Serial.print("x = ");
@@ -153,6 +175,8 @@ void loop() {
     Serial.print(y);
     Serial.print(" z = ");
     Serial.print(z);
+    Serial.print(" armed = ");
+    Serial.print(armed);
     Serial.print(" dist = ");
     Serial.print(dist);
     Serial.print(" angle = ");
@@ -165,9 +189,5 @@ void loop() {
     Serial.println(r3);
   }
   
-  //*/
-  //r1=500; 
-  //r2=500; 
-  //r3=500;
   Set_motors_speed(r1,r2,r3);
 }
