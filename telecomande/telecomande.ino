@@ -2,7 +2,7 @@
 
 //parametres
 #define acurate 1000 // pour 1000       la précision du joystick 
-#define palier_0 1001 // pour 1000       le palier a partir du quel les moteurs s'arréte
+#define palier_0 300 // pour 1000       le palier a partir du quel les moteurs s'arréte
 #define max_speed 150 // nb de steps    vitesse de rotation maximale des moteurs
 #define rotation_ratio 0.5 // pour 1    ratio pour la vitesse de rotation
 #define delay_recheck 10 // ms         temps entre chauque réactualisation
