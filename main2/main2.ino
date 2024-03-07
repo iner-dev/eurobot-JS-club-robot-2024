@@ -1,12 +1,13 @@
 //intégration
+#include "charactres_LM.h"
+#include "Led_Matrix.h"
 #include <AccelStepper.h>
-#include "matrices_led.h"
 
 //parametres
 #define motor_limit_speed 200
 
 //constantes
-const char values[3]{'G','v','b','a','d','P'};
+const char values[6]{'G','v','b','a','d','P'};
 
 
 // definition des matrices led et leurs pins
@@ -19,10 +20,11 @@ const char values[3]{'G','v','b','a','d','P'};
 #define M2_CS_pin 50
 #define M2_CLK_pin 48
 
-
+Led_Matrix M1(M1_DIN_pin, M1_CS_pin, M1_CLK_pin);
+Led_Matrix M2(M2_DIN_pin, M2_CS_pin, M2_CLK_pin);
 
 //definition des  stepper et leurs pins
-#define ENABLE_PIN       8  
+#define ENABLE_PIN          8  
 
 #define R1_STEP_PIN         2    // ex x
 #define R1_DIR_PIN          5 
@@ -51,11 +53,11 @@ bool armed;  //         armement des stepper
 
 
 void write_points(int points){
-   write_matrix(chifres[points%10],M1_DIN_pin,M1_CS_pin,M1_CLK_pin);
+   M1.Write(chifres[points%10]);
    if(chifres[int(points/10)%10]!=0){
-    write_matrix(chifres[int(points/10)%10],M2_DIN_pin,M2_CS_pin,M2_CLK_pin);
+    M2.Write(chifres[int(points/10)%10]);
    }else{
-    write_matrix(nothing,M2_DIN_pin,M2_CS_pin,M2_CLK_pin);
+    M2.Write(nothing);
    }
 }
 
@@ -118,17 +120,10 @@ void setup() {
   r2 = 0;
   r3 = 0;
 
-  // activation des panneaux  leds
-  pinMode(M1_CS_pin, OUTPUT);
-  pinMode(M1_DIN_pin, OUTPUT);
-  pinMode(M1_CLK_pin, OUTPUT);
-  init_matrix(M1_DIN_pin,M1_CS_pin,M1_CLK_pin);
-  
-  pinMode(M2_CS_pin, OUTPUT);
-  pinMode(M2_DIN_pin, OUTPUT);
-  pinMode(M2_CLK_pin, OUTPUT);
-  init_matrix(M2_DIN_pin,M2_CS_pin,M2_CLK_pin);
 
+  M1.init_matrix();
+  M2.init_matrix();
+  
   write_points(points);
 }
 
