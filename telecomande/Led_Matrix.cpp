@@ -26,12 +26,25 @@ int Led_Matrix::intToHex(int x)
 
 void Led_Matrix::write_pix(int data)
 {
-   digitalWrite(CS_pin, LOW);
+  digitalWrite(CS_pin, LOW);
   for (int i = 0; i < 8; i++)
   {
       digitalWrite(CLK_pin, LOW);
       digitalWrite(DIN_pin, data & 0x80); // masquage de donnée
-      data = data << 1; // on décale les bits vers la gauche
+      data = data << 1; // on décale les bits vers la droite
+      digitalWrite(CLK_pin, HIGH);
+  }
+}
+
+void Led_Matrix::i_write_pix(int data)
+{
+  digitalWrite(CS_pin, LOW);
+  data = data << 8; // on décale les bits vers la gauche
+  for (int i = 0; i < 8; i++)
+  {
+      digitalWrite(CLK_pin, LOW);
+      digitalWrite(DIN_pin, data & 0x80); // masquage de donnée
+      data = data >> 1; // on décale les bits vers la droite
       digitalWrite(CLK_pin, HIGH);
   }
 }
@@ -41,6 +54,14 @@ void Led_Matrix::write_line(int adress, int data)
   digitalWrite(CS_pin, LOW);
   write_pix(adress);
   write_pix(data);
+  digitalWrite(CS_pin, HIGH);
+}
+
+void Led_Matrix::i_write_line(int adress, int data)
+{
+  digitalWrite(CS_pin, LOW);
+  write_pix(adress);
+  i_write_pix(data);
   digitalWrite(CS_pin, HIGH);
 }
 
@@ -57,5 +78,12 @@ void Led_Matrix::Write(int tab[8])
 {
   for (int i = 0; i < 8; i++) {
     write_line(i + 1, tab[i]);
+  }
+}
+
+void Led_Matrix::i_Write(int tab[8])
+{
+  for (int i = 0; i < 8; i++) {
+    i_write_line(i + 1, tab[i]);
   }
 }

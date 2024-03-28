@@ -104,15 +104,15 @@ void setup() {
   stepperR1.setEnablePin(R1_ENABLE_PIN);
   stepperR1.setPinsInverted(false, false, true); 
   stepperR1.setAcceleration(75.0);
-  stepperR1.setMaxSpeed(300);
+  stepperR1.setMaxSpeed(1000000);
 
     
-  stepperR2.setMaxSpeed(300);
+  stepperR2.setMaxSpeed(1000000);
   stepperR2.setAcceleration(75.0);
   stepperR2.setEnablePin(R2_ENABLE_PIN);
   stepperR2.setPinsInverted(false, false, true);      
 
-  stepperR3.setMaxSpeed(300.0);
+  stepperR3.setMaxSpeed(1000000);
   stepperR3.setAcceleration(75.0);
   stepperR3.setEnablePin(R3_ENABLE_PIN);
   stepperR3.setPinsInverted(false, false, true);      
